@@ -29,7 +29,8 @@ dir_in_temp <- "T ar"
 
 # files 
 fil_estations_basic_info <- "a_infos_estacoes.txt"
-fil_output_data <- "dados_cientec.csv"
+fil_output_data       <- "dados_cientec.csv"
+fil_output_data_dia   <- "dados_cientec_diarios.csv"
 fil_output_basic_info <- "estacoes_cientec_localizacao.txt"
 
 # check working directory -------------------------------------------------
@@ -67,7 +68,8 @@ write_csv(basic_data_estations,file_path)
 # number of files
 n_files <- length(list_files_temp)
 # all data
-data_estations <- vector("list",n_files*12)
+data_estations     <- vector("list",n_files*12)
+data_estations_dia <- vector("list",n_files*12)
 # read all files
 for(i in 1:n_files){ 
   file_path <- file.path(dir_input,dir_in_temp,list_files_temp[i])
@@ -104,6 +106,20 @@ for(i in 1:n_files){
       n_col <- length(data_estations[[i_data]])
       col_last_day <- days_in_month(ymd(str_c(ano,mes,"01",sep = "-"))) + 1
       names(data_estations[[i_data]]) <- str_c("X",c("HD",1:(n_col-1)))
+      # read max and min temperature
+      i_max <- which(str_detect(data_estations[[i_data]]$XHD,"XIMA"))[1]
+      i_min <- which(str_detect(data_estations[[i_data]]$XHD,"NIMA"))[1]
+      while(is.na(data_estations[[i_data]]$X1[i_max])){i_max <- i_max+1}
+      while(is.na(data_estations[[i_data]]$X1[i_min])){i_min <- i_min+1}
+      data_estations_dia[[i_data]] <- t(data_estations[[i_data]][c(i_max,i_min),
+                                                                 2:col_last_day])
+      # tide max and min data
+      data_estations_dia[[i_data]] <- data.frame(data_estations_dia[[i_data]]) %>% 
+        rename(max = X1, min = X2) %>% 
+        mutate(dia = str_remove(rownames(data_estations_dia[[i_data]]),"X"),
+               data=ymd(paste(ano,mes,dia)), .before = 1) %>% select(-dia)
+      data_estations_dia[[i_data]]$max <- round(as.numeric(data_estations_dia[[i_data]]$max),2)
+      data_estations_dia[[i_data]]$min <- round(as.numeric(data_estations_dia[[i_data]]$min),2)
       # select only lines of hourly temperature
       data_estations[[i_data]] <- data_estations[[i_data]][3:(24+2),1:col_last_day]
       # tide data
@@ -146,7 +162,8 @@ for(i in 1:n_files){
   }
 }
 # combine data in one
-data_estations <- bind_rows(data_estations)
+data_estations     <- bind_rows(data_estations)
+data_estations_dia <- bind_rows(data_estations_dia)
 # tide data
 data_estations <- data_estations %>% filter(!is.na(data)) %>% 
   mutate(estacao=basic_data_estations$estacao,
@@ -155,9 +172,13 @@ data_estations <- data_estations %>% filter(!is.na(data)) %>%
   select(estacao:longitude,data:temp) %>% 
   arrange(data)
 data_estations$temp <- round(data_stations$temp,2)
-#save file
+data_estations_dia <- data_estations_dia %>% arrange(data)
+#save hourly data
 file_path <- file.path(dir_output,fil_output_data)
 write_csv(data_estations,file_path,na="")
+#save daily data
+file_path <- file.path(dir_output,fil_output_data_dia)
+write_csv(data_estations_dia,file_path,na="")
 
 # clear workspace
 rm(list = ls())
