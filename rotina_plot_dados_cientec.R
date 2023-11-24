@@ -63,7 +63,7 @@ plot <- data_estations_dia %>%
                                 0.9,0.8)) +
   geom_line() +
   guides(size = "legend", linewidth = "none", alpha = "none") +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom",axis.text = element_text(colour = "black"))
 plot
 file_path <- file.path(dir_output,"maxmin.png")
 ggsave(file_path,plot,width = 16, height = 10, units = "cm")
