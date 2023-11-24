@@ -4,8 +4,6 @@
 #   http://www.estacao.iag.usp.br ask in the "Solicitacao de Dados"
 # Written by   : Rodrigo Lustosa
 # Writing date : 16 July 2021
-# Edition 01   : Rodrigo Lustosa - 15 Aug 2023 17:50 (GMT -03)
-# Edition 02   : Rodrigo Lustosa - 13 Sep 2023 16:04 (GMT -03)
 # ---------------------------------------------------------------------------- #
 
 # initialization ----------------------------------------------------------
