@@ -156,9 +156,16 @@ for(i in 1:n_files){
         mutate(ano,mes,data=ymd_h(str_c(ano,mes,dia,XHD,":",sep = "-")),
                .before=1) %>% 
         select(-c(XHD,dia,mes,ano)) %>% filter(!is.na(temp))
+    }else{
+      data_estations[[i_data]] <- NULL
+      data_estations_dia[[i_data]] <- NULL
     }
   }
 }
+# for(i in 1:length(data_estations)){
+#   if(length(data_estations[[i]]) > 4)
+#     print(i)
+# }
 # combine data in one
 data_estations     <- bind_rows(data_estations)
 data_estations_dia <- bind_rows(data_estations_dia)
@@ -169,7 +176,8 @@ data_estations <- data_estations %>% filter(!is.na(data)) %>%
          longitude=basic_data_estations$longitude) %>% 
   select(estacao:longitude,data:temp) %>% 
   arrange(data)
-data_estations$temp <- round(data_stations$temp,2)
+# data_estations$temp <- round(data_estations$temp,2)
+data_estations$temp <- round(as.numeric(data_estations$temp),2)
 data_estations_dia <- data_estations_dia %>% arrange(data)
 #save hourly data
 file_path <- file.path(dir_output,fil_output_data)
