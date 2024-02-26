@@ -1,5 +1,6 @@
 .Rhistory
 .Rproj.user/
 CIENTEC.Rproj
-data/
+data/tidied/
+data/nao_implementado/
 plots/
