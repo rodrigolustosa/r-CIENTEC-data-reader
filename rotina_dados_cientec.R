@@ -1,7 +1,9 @@
 # ---------------------------------------------------------------------------- #
 # Name         : 
 # Description  : This code read and organizes data from CIENTEC (IAG-USP)
-#   http://www.estacao.iag.usp.br ask in the "Solicitacao de Dados"
+#   http://www.estacao.iag.usp.br ask in the "Solicitacao de Dados" section.
+#   For now, only air temperature (hourly, daily min. and daily max) is 
+#   supported.
 # Written by   : Rodrigo Lustosa
 # Writing date : 16 July 2021
 # ---------------------------------------------------------------------------- #
@@ -22,14 +24,14 @@ library(xlsx)
 # directories
 dir_input  <- "data/raw"
 dir_output <- "data/tidied"
-dir_basic_info <- "data/basic_info"
+# dir_basic_info <- "data/basic_info"
 dir_in_temp <- "T ar"
 
 # files 
-fil_estations_basic_info <- "a_infos_estacoes.txt"
+# fil_estations_basic_info <- "a_infos_estacoes.txt"
 fil_output_data       <- "dados_cientec.csv"
 fil_output_data_dia   <- "dados_cientec_diarios.csv"
-fil_output_basic_info <- "estacoes_cientec_localizacao.txt"
+# fil_output_basic_info <- "estacoes_cientec_localizacao.txt"
 
 # check working directory -------------------------------------------------
 
@@ -56,10 +58,10 @@ list_files_temp <- dir(files_path)
 # stations basic information ----------------------------------------------
 
 # read and write file
-file_path <- file.path(dir_basic_info,fil_estations_basic_info)
-basic_data_estations <- read_csv(file_path)
-file_path <- file.path(dir_basic_info,fil_output_basic_info)
-write_csv(basic_data_estations,file_path)
+# file_path <- file.path(dir_basic_info,fil_estations_basic_info)
+# basic_data_estations <- read_csv(file_path)
+# file_path <- file.path(dir_basic_info,fil_output_basic_info)
+# write_csv(basic_data_estations,file_path)
 
 # estations data ----------------------------------------------------------
 
@@ -150,7 +152,7 @@ for(i in 1:n_files){
           interp[d] <- styles[[i_cell]]$getFontIndex() %in% tag_font_index
         }
       }
-      # add interpolate and date column
+      # add interpolate and date column in hourly data
       data_estations[[i_data]] <- data_estations[[i_data]] %>% 
         mutate(interp) %>% 
         mutate(ano,mes,data=ymd_h(str_c(ano,mes,dia,XHD,":",sep = "-")),
@@ -162,21 +164,12 @@ for(i in 1:n_files){
     }
   }
 }
-# for(i in 1:length(data_estations)){
-#   if(length(data_estations[[i]]) > 4)
-#     print(i)
-# }
 # combine data in one
 data_estations     <- bind_rows(data_estations)
 data_estations_dia <- bind_rows(data_estations_dia)
 # tide data
 data_estations <- data_estations %>% filter(!is.na(data)) %>% 
-  mutate(estacao=basic_data_estations$estacao,
-         latitude=basic_data_estations$latitude,
-         longitude=basic_data_estations$longitude) %>% 
-  select(estacao:longitude,data:temp) %>% 
   arrange(data)
-# data_estations$temp <- round(data_estations$temp,2)
 data_estations$temp <- round(as.numeric(data_estations$temp),2)
 data_estations_dia <- data_estations_dia %>% arrange(data)
 #save hourly data
@@ -185,8 +178,5 @@ write_csv(data_estations,file_path,na="")
 #save daily data
 file_path <- file.path(dir_output,fil_output_data_dia)
 write_csv(data_estations_dia,file_path,na="")
-
-# clear workspace
-rm(list = ls())
 
 # ---------------------------------------------------------------------------- #
