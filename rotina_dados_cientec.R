@@ -24,14 +24,11 @@ library(xlsx)
 # directories
 dir_input  <- "data/raw"
 dir_output <- "data/tidied"
-# dir_basic_info <- "data/basic_info"
 dir_in_temp <- "T ar"
 
 # files 
-# fil_estations_basic_info <- "a_infos_estacoes.txt"
 fil_output_data       <- "dados_cientec.csv"
 fil_output_data_dia   <- "dados_cientec_diarios.csv"
-# fil_output_basic_info <- "estacoes_cientec_localizacao.txt"
 
 # check working directory -------------------------------------------------
 
@@ -54,14 +51,6 @@ str_basic <- function(string)
 # list temperature files input
 files_path <- file.path(dir_input,dir_in_temp)
 list_files_temp <- dir(files_path)
-
-# stations basic information ----------------------------------------------
-
-# read and write file
-# file_path <- file.path(dir_basic_info,fil_estations_basic_info)
-# basic_data_estations <- read_csv(file_path)
-# file_path <- file.path(dir_basic_info,fil_output_basic_info)
-# write_csv(basic_data_estations,file_path)
 
 # estations data ----------------------------------------------------------
 
