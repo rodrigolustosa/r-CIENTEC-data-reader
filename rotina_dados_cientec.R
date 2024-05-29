@@ -24,7 +24,9 @@ library(xlsx)
 # directories
 dir_input  <- "data/raw"
 dir_output <- "data/tidied"
-dir_in_temp <- "T ar"
+dir_in_temp   <- "T ar"       # air temperature
+# dir_in_tssurf <- "T solo spf" # soil surface temperature
+# dir_in_temp <- dir_in_tssurf
 
 # files 
 fil_output_data       <- "dados_cientec.csv"
@@ -46,22 +48,20 @@ rm.ac <- function(lines)
 str_basic <- function(string)
   return(str_to_lower(str_replace_all(str_trim(string)," ","_")))
 
-# data file names ---------------------------------------------------------
-
-# list temperature files input
-files_path <- file.path(dir_input,dir_in_temp)
-list_files_temp <- dir(files_path)
-
 # estations data ----------------------------------------------------------
 
+# list variable files input
+files_path <- file.path(dir_input,dir_in_temp)
+list_files_var <- dir(files_path)
+
 # number of files
-n_files <- length(list_files_temp)
+n_files <- length(list_files_var)
 # all data
 data_estations     <- vector("list",n_files*12)
 data_estations_dia <- vector("list",n_files*12)
 # read all files
 for(i in 1:n_files){ 
-  file_path <- file.path(dir_input,dir_in_temp,list_files_temp[i])
+  file_path <- file.path(dir_input,dir_in_var,list_files_var[i])
   # for cases where months are not ordered 
   sheet_names <- excel_sheets(path = file_path)
   mes_ordem <- match(sheet_names, c("JAN","FEV","MAR","ABR","MAI","JUN",
@@ -95,7 +95,7 @@ for(i in 1:n_files){
       n_col <- length(data_estations[[i_data]])
       col_last_day <- days_in_month(ymd(str_c(ano,mes,"01",sep = "-"))) + 1
       names(data_estations[[i_data]]) <- str_c("X",c("HD",1:(n_col-1)))
-      # read max and min temperature
+      # read max and min variable
       i_max <- which(str_detect(data_estations[[i_data]]$XHD,"XIMA"))[1]
       i_min <- which(str_detect(data_estations[[i_data]]$XHD,"NIMA"))[1]
       while(is.na(data_estations[[i_data]]$X1[i_max])){i_max <- i_max+1}
@@ -109,11 +109,11 @@ for(i in 1:n_files){
                data=ymd(paste(ano,mes,dia)), .before = 1) %>% select(-dia)
       data_estations_dia[[i_data]]$max <- round(as.numeric(data_estations_dia[[i_data]]$max),2)
       data_estations_dia[[i_data]]$min <- round(as.numeric(data_estations_dia[[i_data]]$min),2)
-      # select only lines of hourly temperature
+      # select only lines of hourly variable
       data_estations[[i_data]] <- data_estations[[i_data]][3:(24+2),1:col_last_day]
       # tide data
       data_estations[[i_data]] <- data_estations[[i_data]] %>% 
-        gather("dia","temp",all_of(2:col_last_day)) %>% 
+        gather("dia","var",all_of(2:col_last_day)) %>% 
         mutate(dia=str_remove(dia,"X")) 
       # tag interpolated data
       interp <- vector(length = nrow(data_estations[[i_data]]))
@@ -146,7 +146,7 @@ for(i in 1:n_files){
         mutate(interp) %>% 
         mutate(ano,mes,data=ymd_h(str_c(ano,mes,dia,XHD,":",sep = "-")),
                .before=1) %>% 
-        select(-c(XHD,dia,mes,ano)) %>% filter(!is.na(temp))
+        select(-c(XHD,dia,mes,ano)) %>% filter(!is.na(var))
     }else{
       data_estations[[i_data]] <- NULL
       data_estations_dia[[i_data]] <- NULL
@@ -159,8 +159,11 @@ data_estations_dia <- bind_rows(data_estations_dia)
 # tide data
 data_estations <- data_estations %>% filter(!is.na(data)) %>% 
   arrange(data)
-data_estations$temp <- round(as.numeric(data_estations$temp),2)
+data_estations$var <- round(as.numeric(data_estations$var),2)
 data_estations_dia <- data_estations_dia %>% arrange(data)
+
+names(data_estations)[2] <- "temp"
+
 #save hourly data
 file_path <- file.path(dir_output,fil_output_data)
 write_csv(data_estations,file_path,na="")
