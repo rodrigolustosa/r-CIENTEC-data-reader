@@ -105,8 +105,8 @@ ggsave(file_path,plot,width = 16, height = 10, units = "cm")
 
 
 # for series of plots bellow
-temp_min <- min(data_estations_dia$min,na.rm = T)
-temp_max <- max(data_estations_dia$max,na.rm = T)
+temp_min <- min(data_estations_dia$Ta_min,na.rm = T)
+temp_max <- max(data_estations_dia$Ta_max,na.rm = T)
 date_min <- min(data_estations_dia$data)
 date_max <- max(data_estations_dia$data)
 date_dif <- date_max - date_min
@@ -118,7 +118,8 @@ while (date_fim <= date_max + 50) {
   file_path <- file.path(dir_output,"ano",str_c("maxmin-",date_fim,".png"))
   if(!file.exists(file_path)){
     plot <- data_estations_dia %>% 
-      select(-media) %>%
+      select(data,Ta_max,Ta_min, Ta_max_acum,Ta_min_acum) %>%
+      # select(-media) %>%
       # select(-max,-min) %>% 
       # select(-max_acum,-min_acum) %>%
       pivot_longer(-data) %>% 
@@ -157,7 +158,7 @@ for (d in 1:365) {
   file_path <- file.path(dir_output,"primer_ano",str_c("maxmin-",d,".png"))
   if(!file.exists(file_path)){
     plot <- data_estations_dia %>% 
-      select(-media) %>%
+      select(data,Ta_max,Ta_min, Ta_max_acum,Ta_min_acum) %>%
       filter(data >= date_min, data <= date_min + d) %>% 
       # select(-max,-min) %>% 
       # select(-max_acum,-min_acum) %>%
@@ -202,7 +203,7 @@ while (d+365 <= date_dif) {
   file_path <- file.path(dir_output,"serie",str_c("maxmin-",date_fim+d,".png"))
   if(!file.exists(file_path)){
     plot <- data_estations_dia %>% 
-      select(-media) %>%
+      select(data,Ta_max,Ta_min, Ta_max_acum,Ta_min_acum) %>%
       # select(-max,-min) %>% 
       # select(-max_acum,-min_acum) %>%
       pivot_longer(-data) %>% 
