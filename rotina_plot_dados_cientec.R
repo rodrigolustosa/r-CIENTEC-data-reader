@@ -20,30 +20,30 @@ file_data_dia   <- "dados_cientec_diarios.csv"
 # read data ---------------------------------------------------------------
 
 file_path <- file.path(dir_input,file_data)
-data_estations <- read_csv(file_path)
+data_stations <- read_csv(file_path)
 
 file_path <- file.path(dir_input,file_data_dia)
-data_estations_dia <- read_csv(file_path)
+data_stations_dia <- read_csv(file_path)
 
 
 # computations ------------------------------------------------------------
 
-max_acum <- data_estations_dia$Ta_max
-min_acum <- data_estations_dia$Ta_min
+max_acum <- data_stations_dia$Ta_max
+min_acum <- data_stations_dia$Ta_min
 for (i in 2:length(max_acum)) {
   max_acum[i] <- max(max_acum[(i-1):i],na.rm = T)
   min_acum[i] <- min(min_acum[(i-1):i],na.rm = T)
 }
-data_estations_dia <- data_estations_dia %>% 
+data_stations_dia <- data_stations_dia %>% 
   mutate(Ta_max_acum = max_acum,Ta_min_acum = min_acum)
 
-data_estations_dia <- full_join(data_estations_dia,
-                                data_estations %>% 
+data_stations_dia <- full_join(data_stations_dia,
+                                data_stations %>% 
                                   mutate(data = date(data)) %>% 
                                   group_by(data) %>% 
                                   summarise(Ta_media = mean(Ta,na.rm = T)))
 
-data_estations_ano <- data_estations_dia %>% mutate(ano = year(data)) %>% 
+data_stations_ano <- data_stations_dia %>% mutate(ano = year(data)) %>% 
   group_by(ano) %>% 
   summarise(Ta_media = mean(Ta_media,na.rm = T),
             Ta_max   = mean(Ta_max  ,na.rm = T),
@@ -51,13 +51,13 @@ data_estations_ano <- data_estations_dia %>% mutate(ano = year(data)) %>%
 
 # stats -------------------------------------------------------------------
 
-head(data_estations_dia %>% arrange(Ta_min),20)
+head(data_stations_dia %>% arrange(Ta_min),20)
 
-head(data_estations_dia %>% arrange(desc(Ta_max)),20)
+head(data_stations_dia %>% arrange(desc(Ta_max)),20)
 
 # plots -------------------------------------------------------------------
 
-plot <- data_estations_dia %>% 
+plot <- data_stations_dia %>% 
   select(data,Ta_max,Ta_min, Ta_max_acum,Ta_min_acum) %>%
   pivot_longer(-data) %>% 
   ggplot(aes(data,value, 
@@ -80,7 +80,7 @@ plot
 file_path <- file.path(dir_output,"maxmin2.png")
 ggsave(file_path,plot,width = 16, height = 10, units = "cm")
 
-plot <- data_estations_ano %>% 
+plot <- data_stations_ano %>% 
   filter(ano != 2023) %>% 
   pivot_longer(Ta_media:Ta_min) %>%
   ggplot(aes(ano,value, color = name)) +
@@ -105,10 +105,10 @@ ggsave(file_path,plot,width = 16, height = 10, units = "cm")
 
 
 # for series of plots bellow
-temp_min <- min(data_estations_dia$Ta_min,na.rm = T)
-temp_max <- max(data_estations_dia$Ta_max,na.rm = T)
-date_min <- min(data_estations_dia$data)
-date_max <- max(data_estations_dia$data)
+temp_min <- min(data_stations_dia$Ta_min,na.rm = T)
+temp_max <- max(data_stations_dia$Ta_max,na.rm = T)
+date_min <- min(data_stations_dia$data)
+date_max <- max(data_stations_dia$data)
 date_dif <- date_max - date_min
 
 
@@ -117,7 +117,7 @@ date_fim <- date_min
 while (date_fim <= date_max + 50) {
   file_path <- file.path(dir_output,"ano",str_c("maxmin-",date_fim,".png"))
   if(!file.exists(file_path)){
-    plot <- data_estations_dia %>% 
+    plot <- data_stations_dia %>% 
       select(data,Ta_max,Ta_min, Ta_max_acum,Ta_min_acum) %>%
       # select(-media) %>%
       # select(-max,-min) %>% 
@@ -157,7 +157,7 @@ while (date_fim <= date_max + 50) {
 for (d in 1:365) {
   file_path <- file.path(dir_output,"primer_ano",str_c("maxmin-",d,".png"))
   if(!file.exists(file_path)){
-    plot <- data_estations_dia %>% 
+    plot <- data_stations_dia %>% 
       select(data,Ta_max,Ta_min, Ta_max_acum,Ta_min_acum) %>%
       filter(data >= date_min, data <= date_min + d) %>% 
       # select(-max,-min) %>% 
@@ -202,7 +202,7 @@ while (d+365 <= date_dif) {
   e <- e + 0.3
   file_path <- file.path(dir_output,"serie",str_c("maxmin-",date_fim+d,".png"))
   if(!file.exists(file_path)){
-    plot <- data_estations_dia %>% 
+    plot <- data_stations_dia %>% 
       select(data,Ta_max,Ta_min, Ta_max_acum,Ta_min_acum) %>%
       # select(-max,-min) %>% 
       # select(-max_acum,-min_acum) %>%
