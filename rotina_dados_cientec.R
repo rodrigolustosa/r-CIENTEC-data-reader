@@ -1,9 +1,12 @@
 # ---------------------------------------------------------------------------- #
-# Name         : 
+# Name         : R CIENTEC data reader
 # Description  : This code read and organizes data from CIENTEC (IAG-USP)
 #   http://www.estacao.iag.usp.br ask in the "Solicitacao de Dados" section.
-#   For now, only air temperature (hourly, daily min. and daily max) is 
-#   supported.
+#   For now, only temperatures (hourly, daily min. and daily max) and similar 
+#   data structures are supported.
+#   Note that only -air temperature- daily min. and max. are measured. For other 
+#   variables, that value is the max and min among the hourly instantaneous
+#   measurements. 
 # Written by   : Rodrigo Lustosa
 # Writing date : 16 July 2021
 # ---------------------------------------------------------------------------- #
@@ -25,7 +28,8 @@ library(xlsx)
 # directories
 dir_input  <- "data/raw"
 dir_output <- "data/tidied"
-dir_in_var <- c("T ar","T solo spf") # air temperature, soil surface temperature
+# air temperature, soil surface temperature
+dir_in_var <- c("T ar","T solo spf")
 name_var   <- c("Ta"  ,"T_solo_spf")
 
 # files 
@@ -168,6 +172,7 @@ for (v in 1:n_var) {
     arrange(data)
   data_estations[[v]]$var <- round(as.numeric(data_estations[[v]]$var),2)
   data_estations_dia[[v]] <- data_estations_dia[[v]] %>% arrange(data)
+  data_estations[[v]]$interp <- as.numeric(data_estations[[v]]$interp)
   # rename column name with variable name
   names(data_estations[[v]])[2] <- name_var[v]
   names(data_estations[[v]])[3] <- str_c(name_var[v],"_",names(data_estations[[v]])[3])

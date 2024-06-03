@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------- #
-# Name         : 
+# Name         : R CIENTEC data plots
 # Description  : 
 # Written by   : Rodrigo Lustosa
 # Writing date : 24 Nov 2023 10:29 (GMT -03)
@@ -28,38 +28,37 @@ data_estations_dia <- read_csv(file_path)
 
 # computations ------------------------------------------------------------
 
-max_acum <- data_estations_dia$max
-min_acum <- data_estations_dia$min
+max_acum <- data_estations_dia$Ta_max
+min_acum <- data_estations_dia$Ta_min
 for (i in 2:length(max_acum)) {
   max_acum[i] <- max(max_acum[(i-1):i],na.rm = T)
   min_acum[i] <- min(min_acum[(i-1):i],na.rm = T)
 }
 data_estations_dia <- data_estations_dia %>% 
-  # select(-max_acum,-min_acum) %>% 
-  mutate(max_acum,min_acum)
+  mutate(Ta_max_acum = max_acum,Ta_min_acum = min_acum)
 
 data_estations_dia <- full_join(data_estations_dia,
                                 data_estations %>% 
                                   mutate(data = date(data)) %>% 
                                   group_by(data) %>% 
-                                  summarise(media = mean(temp,na.rm = T)))
+                                  summarise(Ta_media = mean(Ta,na.rm = T)))
 
 data_estations_ano <- data_estations_dia %>% mutate(ano = year(data)) %>% 
   group_by(ano) %>% 
-  summarise(media = mean(media,na.rm = T),
-            max = mean(max,na.rm = T),
-            min = mean(min,na.rm = T))
+  summarise(Ta_media = mean(Ta_media,na.rm = T),
+            Ta_max   = mean(Ta_max  ,na.rm = T),
+            Ta_min   = mean(Ta_min  ,na.rm = T))
 
 # stats -------------------------------------------------------------------
 
-head(data_estations_dia %>% arrange(min),20)
+head(data_estations_dia %>% arrange(Ta_min),20)
 
-head(data_estations_dia %>% arrange(desc(max)),20)
+head(data_estations_dia %>% arrange(desc(Ta_max)),20)
 
 # plots -------------------------------------------------------------------
 
 plot <- data_estations_dia %>% 
-  select(-media) %>%
+  select(data,Ta_max,Ta_min, Ta_max_acum,Ta_min_acum) %>%
   pivot_longer(-data) %>% 
   ggplot(aes(data,value, 
              linewidth = name,
@@ -83,7 +82,7 @@ ggsave(file_path,plot,width = 16, height = 10, units = "cm")
 
 plot <- data_estations_ano %>% 
   filter(ano != 2023) %>% 
-  pivot_longer(media:min) %>%
+  pivot_longer(Ta_media:Ta_min) %>%
   ggplot(aes(ano,value, color = name)) +
   ggtitle("Cientec") +
   geom_line() +
@@ -92,10 +91,10 @@ plot <- data_estations_ano %>%
   # xlab("Year") +
   scale_x_continuous(breaks = seq(1900,2030,10)) +
   scale_y_continuous(breaks = seq(0,40,2)) +
-  geom_text(aes(label = name),
+  geom_text(aes(label = lab, color = name),
     data = data.frame(ano = 2021, value = c(14.3,18.5,25.4),
-                      name = c("min", "media","max"))
-                      # name = c("min", "mean","max"))
+                      name = c("Ta_min", "Ta_media","Ta_max"),
+                      lab = c("min", "media","max"))
     ) +
   theme(legend.position = "none")
 plot
