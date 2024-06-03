@@ -167,6 +167,9 @@ for (v in 1:n_var) {
             mutate(ano,mes,data=ymd_h(str_c(ano,mes,dia,XHD,":",sep = "-")),
                    .before=1) %>% 
             select(-c(XHD,dia,mes,ano)) %>% filter(!is.na(var))
+          # remove repetitions 
+          data_estations[[v]][[i_data]] <- unique(data_estations[[v]][[i_data]])
+          data_estations_dia[[v]][[i_data]] <- unique(data_estations_dia[[v]][[i_data]])
         }else{
           data_estations[[v]][[i_data]] <- NULL
           data_estations_dia[[v]][[i_data]] <- NULL
