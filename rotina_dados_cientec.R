@@ -88,7 +88,8 @@ for (v in 1:n_var) {
       i_sheet <- which(mes == mes_ordem)
       if(length(i_sheet) == 1){
         # read data
-        data_estations[[v]][[i_data]] <- read_excel(file_path,sheet = i_sheet)
+        data_estations[[v]][[i_data]] <- read_excel(file_path,sheet = i_sheet,
+                                                    .name_repair = "unique_quiet")
         # detect if there is interpolated data
         prov <- as.matrix(data_estations[[v]][[i_data]])
         i_tag_interp <- which(matrix(str_detect(prov,"nterpolado"),
