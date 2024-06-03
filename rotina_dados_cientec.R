@@ -52,6 +52,14 @@ rm.ac <- function(lines)
 str_basic <- function(string)
   return(str_to_lower(str_replace_all(str_trim(string)," ","_")))
 
+# fix common typing problems 
+str_fix_typing <- function(string){
+  string <- str_replace_all(string,"^\\.|^,|\\.$|,$| |/","")
+  string <- str_replace_all(string,",,",",")
+  string <- str_replace_all(string,",",".")
+  return(string)
+}
+
 # estations data ----------------------------------------------------------
 
 n_var <- length(name_var)
@@ -175,6 +183,7 @@ for (v in 1:n_var) {
   data_estations[[v]] <- data_estations[[v]] %>% 
     filter(!is.na(data),var != -99) %>% # -99 is invalid data
     arrange(data)
+  data_estations[[v]]$var <- str_fix_typing(data_estations[[v]]$var)
   data_estations[[v]]$var <- round(as.numeric(data_estations[[v]]$var),2)
   data_estations_dia[[v]] <- data_estations_dia[[v]] %>% arrange(data)
   data_estations[[v]]$interp <- as.numeric(data_estations[[v]]$interp)
